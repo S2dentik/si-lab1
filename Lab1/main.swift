@@ -52,8 +52,21 @@ let proxyCommand = command(
     RunLoop.main.run()
 }
 
+let fileCommand = command(
+    Argument<String>("address", description: "IP address to send the file to"),
+    Argument<Int>("port", description: "Port to send the file to"),
+    Argument<String>("file", description: "Path to the file to send")
+) { address, port, file in
+    guard let data = FileManager.default.contents(atPath: file), let contents = String(data: data, encoding: .utf8) else {
+        return log("File does not exist")
+    }
+    var sender = Sender(address: address, port: Int32(port))
+    sender.send(contents)
+}
+
 let group = Group()
 group.addCommand("send", sendCommand)
 group.addCommand("listen", listenCommand)
 group.addCommand("proxy", proxyCommand)
+group.addCommand("file", fileCommand)
 group.run()
