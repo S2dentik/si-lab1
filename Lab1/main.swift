@@ -39,7 +39,21 @@ let listenCommand = command(
     RunLoop.main.run()
 }
 
+let proxyCommand = command(
+    Argument<String>("address", description: "IP address to be listening on"),
+    Argument<Int>("port", description: "Port to be listenining on"),
+    Argument<String>("destination_address", description: "IP address to be proxying to"),
+    Argument<Int>("destination_port", description: "Port to be proxying to")
+) { address, port, destinationAddress, destinationPort in
+    var sender = Sender(address: destinationAddress, port: Int32(destinationPort))
+    Receiver(address: address, port: Int32(port)).read {
+        sender.send($0)
+    }
+    RunLoop.main.run()
+}
+
 let group = Group()
 group.addCommand("send", sendCommand)
 group.addCommand("listen", listenCommand)
+group.addCommand("proxy", proxyCommand)
 group.run()
